@@ -26,7 +26,56 @@ a { color: var(--gold); text-decoration: none; }
 
 #app { height: 100vh; overflow: hidden; }
 
-.app-shell { display: flex; height: 100vh; overflow: hidden; }
+.page-wrap { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+.app-shell { display: flex; flex: 1; overflow: hidden; }
+
+/* ── Live currency ticker bar ── */
+.ticker-bar {
+  height: 34px; flex-shrink: 0; display: flex; align-items: center; overflow: hidden;
+  background: var(--navy-dark); border-bottom: 1px solid rgba(200,160,85,0.25);
+}
+.ticker-live-label {
+  padding: 0 16px; font-size: 11px; background: var(--gold); color: var(--navy-dark);
+  height: 100%; display: flex; align-items: center; font-weight: 800; white-space: nowrap;
+  flex-shrink: 0; letter-spacing: 0.4px; gap: 6px;
+}
+.live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--navy-dark); display: inline-block; animation: liveDot 1.2s infinite; }
+@keyframes liveDot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.8); } }
+.ticker-track-wrap { overflow: hidden; flex: 1; position: relative; height: 100%; display: flex; align-items: center; }
+.ticker-track { display: flex; animation: tickerScroll 30s linear infinite; will-change: transform; width: max-content; }
+@keyframes tickerScroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+.ticker-item {
+  display: flex; align-items: center; gap: 10px; padding: 0 22px; border-right: 1px solid rgba(200,160,85,0.2);
+  font-size: 12px; white-space: nowrap; height: 34px;
+}
+.ticker-flag-lbl { color: #446688; }
+.ticker-val { color: var(--gold-light); font-weight: 700; font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+.ticker-arrow { font-size: 14px; }
+.ticker-time { padding: 0 16px; font-size: 11px; font-family: 'JetBrains Mono', monospace; color: #446688; white-space: nowrap; flex-shrink: 0; direction: ltr; letter-spacing: 0.5px; }
+
+/* ── Dashboard currency widget ── */
+.dash-cur-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+.dash-cur-card { background: linear-gradient(135deg,#f8fafc,#eef1f7); border-radius: 10px; padding: 14px; text-align: center; border: 1px solid var(--border); }
+.dash-cur-flag { font-size: 22px; margin-bottom: 4px; }
+.dash-cur-code { font-size: 11px; color: var(--muted); font-weight: 700; margin-bottom: 6px; }
+.dash-cur-rate { font-size: 19px; font-weight: 900; color: var(--navy); font-family: 'JetBrains Mono', monospace; }
+.dash-cur-arrow { font-size: 11px; font-weight: 700; margin-top: 4px; }
+
+/* ── Currency exchange screen ── */
+.cur-card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
+.cur-big-card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); border: 2px solid var(--border); transition: border-color 0.4s ease; }
+.cur-big-flag { font-size: 26px; margin-bottom: 6px; }
+.cur-big-lbl { font-size: 14px; font-weight: 700; color: var(--ink); }
+.cur-big-code { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.cur-big-badge { border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 800; white-space: nowrap; }
+.cur-big-rate { font-size: 36px; font-weight: 900; color: var(--navy); line-height: 1; }
+.cur-big-note { font-size: 11px; color: var(--muted); margin-top: 8px; }
+.cur-mini-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+.cur-mini-box { background: linear-gradient(135deg,#f8fafc,#eef1f7); border-radius: 10px; padding: 14px; text-align: center; border: 1px solid var(--border); }
+.cur-mini-flag { font-size: 22px; margin-bottom: 6px; }
+.cur-mini-lbl { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+.cur-mini-val { font-size: 18px; font-weight: 900; color: var(--gold); font-family: 'JetBrains Mono', monospace; }
+.cur-mini-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
 
 /* ── Sidebar ── */
 .sidebar {
@@ -187,6 +236,8 @@ td { padding: 10px 12px; font-size: 12px; color: var(--ink); border-bottom: 1px 
   .mid-grid { grid-template-columns: 1fr; }
   .span2 { grid-column: span 1; }
   .form-grid { grid-template-columns: 1fr; }
+  .dash-cur-grid, .cur-mini-grid { grid-template-columns: repeat(3, 1fr); }
+  .cur-card-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 640px) {
   .sidebar { width: 72px; }
@@ -194,4 +245,5 @@ td { padding: 10px 12px; font-size: 12px; color: var(--ink); border-bottom: 1px 
   .brand-title { font-size: 16px; text-align: center; }
   .sidebar-footer { justify-content: center; }
   .stat-grid, .stat-grid-3 { grid-template-columns: 1fr; }
+  .dash-cur-grid, .cur-mini-grid { grid-template-columns: repeat(2, 1fr); }
 }

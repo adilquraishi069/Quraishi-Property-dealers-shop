@@ -33,6 +33,40 @@ const COMMISSION_RULES = {
   'rent': { label: 'کرایہ (1 ماہ کرایہ)', pct: 100, split: [60, 40] },
 };
 
+/* ── ژوندی کرنسی نرخونه (Live Currency Rates → PKR) ── */
+const CURRENCIES = [
+  { code: 'USD', lbl: 'امریکی ڈالر', flag: '🇺🇸', base: 278.50 },
+  { code: 'EUR', lbl: 'یورو', flag: '🇪🇺', base: 301.20 },
+  { code: 'GBP', lbl: 'برطانوی پاؤنڈ', flag: '🇬🇧', base: 352.80 },
+  { code: 'SAR', lbl: 'سعودی ریال', flag: '🇸🇦', base: 74.20 },
+  { code: 'AED', lbl: 'یو اے ای درہم', flag: '🇦🇪', base: 75.85 },
+  { code: 'AFN', lbl: 'افغانی', flag: '🇦🇫', base: 3.90 },
+];
+let CUR_RATES = {};
+CURRENCIES.forEach(c => { CUR_RATES[c.code] = c.base; });
+let CUR_TIME = '';
+let CUR_TIMER = null;
+
+function tickCurrency() {
+  const now = new Date();
+  CUR_TIME = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0') + ':' + String(now.getSeconds()).padStart(2, '0');
+  CURRENCIES.forEach(c => {
+    const cur = CUR_RATES[c.code];
+    const delta = (Math.random() - 0.5) * (c.base * 0.003);
+    let next = cur + delta;
+    next = Math.max(c.base * 0.9, Math.min(c.base * 1.1, next));
+    CUR_RATES[c.code] = +next.toFixed(2);
+  });
+  updateTickerDom();
+  if (UI.screen === 'currency') updateCurrencyScreenDom();
+}
+
+function startCurrencyTicker() {
+  if (CUR_TIMER) clearInterval(CUR_TIMER);
+  tickCurrency();
+  CUR_TIMER = setInterval(tickCurrency, 1000);
+}
+
 /* ── مددگار فنکشنز ── */
 const fmt = n => Math.round(n || 0).toLocaleString('en');
 const pct = (a, b) => (b > 0 ? Math.round((a / b) * 100) : 0);
@@ -58,6 +92,7 @@ const NAV_ITEMS = [
   { key: 'properties', icon: '🏘️', label: 'جائیدادیں' },
   { key: 'clients', icon: '👥', label: 'کلائنٹس' },
   { key: 'finance', icon: '💰', label: 'مالیات' },
+  { key: 'currency', icon: '💱', label: 'کرنسی تبادلہ' },
   { key: 'tools', icon: '🧰', label: 'ٹولز' },
   { key: 'documents', icon: '📋', label: 'دستاویزات' },
   { key: 'hr', icon: '🧑‍💼', label: 'عملہ' },
@@ -69,6 +104,7 @@ const TITLES = {
   properties: { t: 'تمام جائیدادیں', s: STATE.properties.length + ' درج شدہ جائیدادوں کی فہرست' },
   clients: { t: 'کلائنٹس اور مالکان', s: 'گاہکوں کی معلومات، کال اور واٹس ایپ' },
   finance: { t: 'مالیاتی حساب', s: 'آمدنی، اخراجات، کمیشن اور خالص منافع' },
+  currency: { t: 'کرنسی کے ژوندی نرخ', s: 'ڈالر · یورو · پاؤنڈ · ریال · درہم → روپے — ہر سیکنڈ تازہ' },
   tools: { t: 'پراپرٹی ٹولز', s: 'ماپ، کرایہ، قسط اور موازنہ کیلکولیٹرز' },
   documents: { t: 'دستاویزات', s: 'ہر جائیداد کی دستاویزات کا ریکارڈ' },
   hr: { t: 'عملہ (HR)', s: 'ملازمین، حاضری اور تنخواہ' },
@@ -85,44 +121,92 @@ function render() {
   TITLES.properties.s = STATE.properties.length + ' درج شدہ جائیدادوں کی فہرست';
   const cur = TITLES[UI.screen] || TITLES.dashboard;
   document.getElementById('app').innerHTML = `
-    <div class="app-shell">
-      <aside class="sidebar">
-        <div class="brand">
-          <div class="brand-title">🏘️ قریشی پراپرٹی</div>
-          <div class="brand-sub">پراپرٹی مینجمنٹ سسٹم</div>
-        </div>
-        <nav class="nav">
-          ${NAV_ITEMS.map(n => `
-            <div class="nav-item ${UI.screen === n.key ? 'active' : ''}" onclick="setScreen('${n.key}')">
-              <span class="nav-icon">${n.icon}</span><span class="nav-label">${n.label}</span>
-            </div>`).join('')}
-        </nav>
-        <div class="sidebar-footer">
-          <div class="agent-avatar">👤</div>
-          <div>
-            <div class="agent-name">عادل قریشی</div>
-            <div class="agent-office">قریشی پراپرٹی دفتر</div>
+    <div class="page-wrap">
+      ${tickerBarHtml()}
+      <div class="app-shell">
+        <aside class="sidebar">
+          <div class="brand">
+            <div class="brand-title">🏘️ قریشی پراپرٹی</div>
+            <div class="brand-sub">پراپرٹی مینجمنٹ سسٹم</div>
           </div>
-        </div>
-      </aside>
-      <div class="main">
-        <header class="topbar">
-          <div>
-            <h1>${cur.t}</h1>
-            <p>${cur.s}</p>
+          <nav class="nav">
+            ${NAV_ITEMS.map(n => `
+              <div class="nav-item ${UI.screen === n.key ? 'active' : ''}" onclick="setScreen('${n.key}')">
+                <span class="nav-icon">${n.icon}</span><span class="nav-label">${n.label}</span>
+              </div>`).join('')}
+          </nav>
+          <div class="sidebar-footer">
+            <div class="agent-avatar">👤</div>
+            <div>
+              <div class="agent-name">عادل قریشی</div>
+              <div class="agent-office">قریشی پراپرٹی دفتر</div>
+            </div>
           </div>
-          <div class="topbar-actions">
-            <button class="btn btn-ghost" onclick="setScreen('registration')">+ نئی انٹری</button>
-            <button class="btn btn-primary" onclick="setScreen('finance')">📊 رپورٹ</button>
+        </aside>
+        <div class="main">
+          <header class="topbar">
+            <div>
+              <h1>${cur.t}</h1>
+              <p>${cur.s}</p>
+            </div>
+            <div class="topbar-actions">
+              <button class="btn btn-ghost" onclick="setScreen('registration')">+ نئی انٹری</button>
+              <button class="btn btn-primary" onclick="setScreen('finance')">📊 رپورٹ</button>
+            </div>
+          </header>
+          <div class="content">
+            ${screenContent()}
           </div>
-        </header>
-        <div class="content">
-          ${screenContent()}
         </div>
       </div>
     </div>
   `;
   afterRender();
+}
+
+/* ── لائیو کرنسی ٹکر بار ── */
+function tickerBarHtml() {
+  const items = CURRENCIES.map(c => tickerItemHtml(c)).join('');
+  return `
+    <div class="ticker-bar">
+      <div class="ticker-live-label"><span class="live-dot"></span>ژوندي نرخونه</div>
+      <div class="ticker-track-wrap">
+        <div class="ticker-track">${items}${items}</div>
+      </div>
+      <div class="ticker-time" id="tickerTime">${CUR_TIME}</div>
+    </div>`;
+}
+
+function tickerItemHtml(c) {
+  const rate = CUR_RATES[c.code];
+  const up = rate >= c.base;
+  return `
+    <div class="ticker-item">
+      <span class="ticker-flag-lbl">${c.flag} ${c.code} / PKR</span>
+      <span class="ticker-val" id="tick-${c.code}">${rate.toFixed(2)} روپے</span>
+      <span class="ticker-arrow" id="tick-arrow-${c.code}" style="color:${up ? '#27ae60' : '#e74c3c'}">${up ? '▲' : '▼'}</span>
+    </div>`;
+}
+
+function updateTickerDom() {
+  const timeEl = document.getElementById('tickerTime');
+  if (timeEl) timeEl.textContent = CUR_TIME;
+  CURRENCIES.forEach(c => {
+    const rate = CUR_RATES[c.code];
+    const up = rate >= c.base;
+    document.querySelectorAll(`#tick-${c.code}`).forEach(el => { el.textContent = rate.toFixed(2) + ' روپے'; });
+    document.querySelectorAll(`#tick-arrow-${c.code}`).forEach(el => {
+      el.textContent = up ? '▲' : '▼';
+      el.style.color = up ? '#27ae60' : '#e74c3c';
+    });
+    const dashVal = document.getElementById(`dashcur-${c.code}`);
+    const dashArrow = document.getElementById(`dashcur-arrow-${c.code}`);
+    if (dashVal) dashVal.textContent = rate.toFixed(2);
+    if (dashArrow) {
+      dashArrow.textContent = up ? '▲ بالا' : '▼ ښکته';
+      dashArrow.style.color = up ? '#27ae60' : '#e74c3c';
+    }
+  });
 }
 
 function screenContent() {
@@ -132,6 +216,7 @@ function screenContent() {
     case 'properties': return screenProperties();
     case 'clients': return screenClients();
     case 'finance': return screenFinance();
+    case 'currency': return screenCurrency();
     case 'tools': return screenTools();
     case 'documents': return screenDocuments();
     case 'hr': return screenHR();
@@ -143,6 +228,7 @@ function screenContent() {
 function afterRender() {
   if (UI.screen === 'tools') wireToolsCalculators();
   if (UI.screen === 'finance') wireCommissionCalculator();
+  if (UI.screen === 'currency') wireCurrencyConverter();
 }
 
 /* ══════════════════════ ڈیش بورڈ ══════════════════════ */
@@ -217,6 +303,15 @@ function screenDashboard() {
       </div>
     </div>
     <div class="card">
+      <div class="row-between" style="margin-bottom:16px;">
+        <div class="card-title" style="margin:0;">💱 کرنسی کے ژوندی نرخ (لائیو)</div>
+        <button class="btn btn-ghost" onclick="setScreen('currency')">مکمل تبادلہ ← </button>
+      </div>
+      <div class="dash-cur-grid">
+        ${CURRENCIES.map(c => dashCurrencyCardHtml(c)).join('')}
+      </div>
+    </div>
+    <div class="card">
       <div class="card-title">📋 حال ہی میں درج شدہ جائیدادیں</div>
       <div class="table-wrap">
         <table>
@@ -226,6 +321,18 @@ function screenDashboard() {
       </div>
     </div>
   `;
+}
+
+function dashCurrencyCardHtml(c) {
+  const rate = CUR_RATES[c.code];
+  const up = rate >= c.base;
+  return `
+    <div class="dash-cur-card">
+      <div class="dash-cur-flag">${c.flag}</div>
+      <div class="dash-cur-code">${c.code}</div>
+      <div class="dash-cur-rate" id="dashcur-${c.code}">${rate.toFixed(2)}</div>
+      <div class="dash-cur-arrow" id="dashcur-arrow-${c.code}" style="color:${up ? '#27ae60' : '#e74c3c'}">${up ? '▲ بالا' : '▼ ښکته'}</div>
+    </div>`;
 }
 
 /* ══════════════════════ نئی انٹری / رجسٹریشن ══════════════════════ */
@@ -577,6 +684,98 @@ function submitTxnForm(e) {
   render();
 }
 
+/* ══════════════════════ کرنسی تبادلہ ══════════════════════ */
+function screenCurrency() {
+  return `
+    <div class="cur-card-grid">
+      ${CURRENCIES.map(c => currencyBigCardHtml(c)).join('')}
+    </div>
+    <div class="card">
+      <div class="card-title">🔄 کرنسی کنورٹر</div>
+      <div class="form-grid" style="margin-bottom:14px;">
+        <div class="field"><label>رقم</label><input id="convAmount" type="number" placeholder="1000" value="1" /></div>
+        <div class="field"><label>کرنسی</label>
+          <select id="convCurrency">
+            ${CURRENCIES.map(c => `<option value="${c.code}">${c.flag} ${c.lbl} (${c.code})</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div class="comm-result-grid" style="grid-template-columns:1fr;">
+        <div class="comm-box" style="text-align:center;">
+          <div class="comm-label">پاکستانی روپوں میں</div>
+          <div id="convResult" class="comm-value gold" style="font-size:26px;">0 روپے</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 1 یونٹ = ؟ روپے</div>
+      <div class="cur-mini-grid">
+        ${CURRENCIES.map(c => `
+          <div class="cur-mini-box">
+            <div class="cur-mini-flag">${c.flag}</div>
+            <div class="cur-mini-lbl">1 ${c.code} =</div>
+            <div class="cur-mini-val" id="curmini-${c.code}">${CUR_RATES[c.code].toFixed(2)}</div>
+            <div class="cur-mini-sub">روپے</div>
+          </div>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function currencyBigCardHtml(c) {
+  const rate = CUR_RATES[c.code];
+  const up = rate >= c.base;
+  return `
+    <div class="cur-big-card" style="border-color:${up ? '#a9dfbf' : '#f1948a'}" id="curcard-${c.code}">
+      <div class="row-between" style="align-items:flex-start;margin-bottom:16px;">
+        <div>
+          <div class="cur-big-flag">${c.flag}</div>
+          <div class="cur-big-lbl">${c.lbl}</div>
+          <div class="cur-big-code mono">${c.code} / PKR</div>
+        </div>
+        <div class="cur-big-badge" id="curbadge-${c.code}" style="background:${up ? '#eafaf1' : '#fdedec'};color:${up ? '#27ae60' : '#e74c3c'}">${up ? '▲ بالا' : '▼ ښکته'}</div>
+      </div>
+      <div class="cur-big-rate mono" id="curbig-${c.code}">${rate.toFixed(2)}</div>
+      <div class="cur-big-note">پاکستانی روپے — ہر سیکنڈ تازہ</div>
+    </div>`;
+}
+
+function updateCurrencyScreenDom() {
+  CURRENCIES.forEach(c => {
+    const rate = CUR_RATES[c.code];
+    const up = rate >= c.base;
+    const big = document.getElementById(`curbig-${c.code}`);
+    const mini = document.getElementById(`curmini-${c.code}`);
+    const badge = document.getElementById(`curbadge-${c.code}`);
+    const card = document.getElementById(`curcard-${c.code}`);
+    if (big) big.textContent = rate.toFixed(2);
+    if (mini) mini.textContent = rate.toFixed(2);
+    if (badge) {
+      badge.textContent = up ? '▲ بالا' : '▼ ښکته';
+      badge.style.background = up ? '#eafaf1' : '#fdedec';
+      badge.style.color = up ? '#27ae60' : '#e74c3c';
+    }
+    if (card) card.style.borderColor = up ? '#a9dfbf' : '#f1948a';
+  });
+  updateConverterResult();
+}
+
+function updateConverterResult() {
+  const amountEl = document.getElementById('convAmount');
+  const currencyEl = document.getElementById('convCurrency');
+  const resultEl = document.getElementById('convResult');
+  if (!amountEl || !currencyEl || !resultEl) return;
+  const amount = +amountEl.value || 0;
+  const rate = CUR_RATES[currencyEl.value] || 0;
+  resultEl.textContent = fmt(amount * rate) + ' روپے';
+}
+
+function wireCurrencyConverter() {
+  document.getElementById('convAmount')?.addEventListener('input', updateConverterResult);
+  document.getElementById('convCurrency')?.addEventListener('change', updateConverterResult);
+  updateConverterResult();
+}
+
 /* ══════════════════════ ٹولز ══════════════════════ */
 const TOOLS = [
   { key: 'measure', icon: '📐', label: 'گھر کی پیمائش' },
@@ -871,4 +1070,7 @@ function toggleForm(key) {
 }
 
 /* ══════════════════════ آغاز ══════════════════════ */
-document.addEventListener('DOMContentLoaded', render);
+document.addEventListener('DOMContentLoaded', () => {
+  render();
+  startCurrencyTicker();
+});
