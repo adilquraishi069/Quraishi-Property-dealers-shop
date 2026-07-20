@@ -264,13 +264,31 @@ function screenDashboard() {
     </div>`;
   }).join('');
 
-  const dealDist = ['rent', 'sale', 'mortgage'].map(k => {
-    const list = P.filter(p => p.deal === k);
-    if (!list.length) return '';
-    return `<div class="type-row">
-      <span class="type-icon">${k === 'rent' ? '🔑' : k === 'sale' ? '💵' : '🏦'}</span>
-      <div class="type-label">${DEALL[k]}</div>
-      <div class="type-count" style="background:${DEALC[k]}22;color:${DEALC[k]}">${list.length} جائیداد</div>
+  const withRooms = P.filter(p => p.rooms > 0);
+  const roomBuckets = [1, 2, 3, 4, 5].map(r => r === 5 ? withRooms.filter(p => p.rooms >= 5).length : withRooms.filter(p => p.rooms === r).length);
+  const maxRoomBucket = Math.max(1, ...roomBuckets);
+  const roomRows = [1, 2, 3, 4, 5].map((r, i) => {
+    const count = roomBuckets[i];
+    if (!count) return '';
+    const label = r === 5 ? '5+ کمرے' : r + ' کمرے';
+    const w = pct(count, maxRoomBucket);
+    return `<div class="bar-row">
+      <div class="bar-label">${label}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${w}%;background:linear-gradient(90deg,#2980b9,#1b3d6e);">${count}</div></div>
+    </div>`;
+  }).join('');
+
+  const withFloors = P.filter(p => p.floors > 0);
+  const floorBuckets = [1, 2, 3, 4].map(f => f === 4 ? withFloors.filter(p => p.floors >= 4).length : withFloors.filter(p => p.floors === f).length);
+  const maxFloorBucket = Math.max(1, ...floorBuckets);
+  const floorRows = [1, 2, 3, 4].map((f, i) => {
+    const count = floorBuckets[i];
+    if (!count) return '';
+    const label = f === 4 ? '4+ منزلہ' : f + ' منزلہ';
+    const w = pct(count, maxFloorBucket);
+    return `<div class="bar-row">
+      <div class="bar-label">${label}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${w}%;background:linear-gradient(90deg,#8e44ad,#5b2c6f);">${count}</div></div>
     </div>`;
   }).join('');
 
@@ -294,12 +312,21 @@ function screenDashboard() {
     </div>
     <div class="mid-grid">
       <div class="card span2">
-        <div class="card-title">📊 جائیداد کی قسم کے مطابق تقسیم</div>
-        ${typeDist || '<p class="muted small">کوئی ڈیٹا موجود نہیں</p>'}
+        <div class="card-title">🏠 کمروں اور منزلوں کے مطابق جائیدادیں</div>
+        <div class="two-col">
+          <div>
+            <div class="col-label" style="color:#2980b9;">کمروں کے مطابق</div>
+            ${roomRows || '<p class="muted small">کوئی ڈیٹا موجود نہیں</p>'}
+          </div>
+          <div>
+            <div class="col-label" style="color:#8e44ad;">منزلوں کے مطابق</div>
+            ${floorRows || '<p class="muted small">کوئی ڈیٹا موجود نہیں</p>'}
+          </div>
+        </div>
       </div>
       <div class="card">
-        <div class="card-title">🏘️ سودے کی نوعیت</div>
-        ${dealDist || '<p class="muted small">کوئی ڈیٹا موجود نہیں</p>'}
+        <div class="card-title">📊 جائیداد کی قسم کے مطابق تقسیم</div>
+        ${typeDist || '<p class="muted small">کوئی ڈیٹا موجود نہیں</p>'}
       </div>
     </div>
     <div class="card">
@@ -393,9 +420,15 @@ function propertyForm(code) {
         <div class="field"><label>${UI.regTab === 'rent' ? 'کرایہ/ماہ (روپے)' : UI.regTab === 'sale' ? 'فروخت قیمت (روپے)' : 'گروی رقم (روپے)'}</label><input name="price" type="number" required placeholder="0" /></div>
         <div class="field"><label>مالک کا نام</label><input name="owner" required placeholder="نام" /></div>
         <div class="field"><label>مالک کا فون</label><input name="ownerPhone" required placeholder="0300-0000000" /></div>
+        <div class="field"><label>${UI.regTab === 'rent' ? 'پیشگی (روپے)' : 'بیعانہ (روپے)'}</label><input name="advance" type="number" placeholder="0" /></div>
         ${UI.regTab === 'mortgage' ? `<div class="field"><label>گروی کی مدت</label><input name="duration" placeholder="1 سال" /></div>` : ''}
       </div>
-      <button type="submit" class="btn btn-primary" style="margin-top:6px;">✅ محفوظ کریں (${code})</button>
+      <div class="check-row">
+        <label class="check-item"><input type="checkbox" name="yard" /> <span>🌳 حویلی / صحن موجود ہے</span></label>
+        <label class="check-item"><input type="checkbox" name="electricity" checked /> <span>⚡ بجلی موجود ہے</span></label>
+        <label class="check-item"><input type="checkbox" name="water" checked /> <span>🚰 پانی موجود ہے</span></label>
+      </div>
+      <button type="submit" class="btn btn-primary" style="margin-top:10px;">✅ محفوظ کریں (${code})</button>
     </form>`;
 }
 
@@ -413,6 +446,10 @@ function submitPropertyForm(e, code) {
     price: +f.get('price') || 0,
     owner: f.get('owner'),
     ownerPhone: f.get('ownerPhone'),
+    advance: +f.get('advance') || 0,
+    yard: f.get('yard') === 'on',
+    electricity: f.get('electricity') === 'on',
+    water: f.get('water') === 'on',
     tenant: '',
     date: todayISO(),
     status: 'available',
@@ -461,23 +498,44 @@ function filteredProperties() {
   });
 }
 
+const PTYPE_GRADIENT = {
+  house: 'linear-gradient(150deg,#2980b9 0%,#1b3d6e 55%,#0a1e38 100%)',
+  flat: 'linear-gradient(150deg,#8e44ad 0%,#5b2c6f 55%,#2c1234 100%)',
+  shop: 'linear-gradient(150deg,#e67e22 0%,#af5a17 55%,#5c2e0a 100%)',
+  land: 'linear-gradient(150deg,#27ae60 0%,#1e8449 55%,#0e401f 100%)',
+  room: 'linear-gradient(150deg,#7f8c8d 0%,#4d5656 55%,#212727 100%)',
+};
+
+function chip(icon, label, positive) {
+  const on = positive !== false;
+  return `<span class="info-chip ${on ? '' : 'info-chip-off'}">${icon} ${escapeHtml(label)}</span>`;
+}
+
 function propertiesGridHtml() {
   const list = filteredProperties();
   if (!list.length) return `<p class="muted small" style="padding:20px;text-align:center;">کوئی جائیداد نہیں ملی</p>`;
   return `<div class="prop-grid">
     ${list.map(p => `
       <div class="prop-card">
-        <div class="prop-thumb" style="background:linear-gradient(135deg,${DEALC[p.deal]}22,${DEALC[p.deal]}0d);">
+        <div class="prop-thumb" style="background:${PTYPE_GRADIENT[p.ptype] || PTYPE_GRADIENT.house};">
+          <div class="prop-thumb-pattern"></div>
           <div class="prop-thumb-icon">${PTI[p.ptype]}</div>
-          <div class="prop-thumb-note">— تصویر یہاں —</div>
           <div class="prop-code" style="background:${DEALC[p.deal]};">${p.id}</div>
           <div class="prop-status" style="background:${SC[p.status]};">${SL[p.status]}</div>
         </div>
         <div class="prop-body">
           <div class="prop-title">${PTL[p.ptype]}${p.rooms > 0 ? ' · ' + p.rooms + ' کمرے' : ''}${p.floors > 0 ? ' · ' + p.floors + ' منزلہ' : ''}</div>
           <div class="prop-loc">📍 ${escapeHtml(p.loc)}</div>
+          <div class="info-chip-row">
+            ${chip('🚪', p.rooms > 0 ? p.rooms + ' کمرے' : 'کمرے نہیں')}
+            ${chip('🏢', p.floors > 0 ? p.floors + ' منزلہ' : '—')}
+            ${chip('🌳', p.yard ? 'حویلی موجود' : 'بغیر حویلی', p.yard)}
+            ${chip('⚡', p.electricity ? 'بجلی موجود' : 'بجلی نہیں', p.electricity)}
+            ${chip('🚰', p.water ? 'پانی موجود' : 'پانی نہیں', p.water)}
+            ${p.advance > 0 ? chip('💵', (p.deal === 'rent' ? 'پیشگی ' : 'بیعانہ ') + fmt(p.advance) + ' روپے') : ''}
+          </div>
           <div class="row-between">
-            <div class="prop-price">${fmt(p.price)} روپے</div>
+            <div class="prop-price">${fmt(p.price)} روپے${p.deal === 'rent' ? '<span class="prop-price-sub">/ماہ</span>' : ''}</div>
             ${badge(DEALL[p.deal], DEALC[p.deal])}
           </div>
         </div>
@@ -559,10 +617,27 @@ function screenFinance() {
   const T = STATE.transactions;
   const income = T.filter(t => t.type === 'income').reduce((s, t) => s + t.amt, 0);
   const expense = T.filter(t => t.type === 'expense').reduce((s, t) => s + t.amt, 0);
+  const today = todayISO();
+  const todayTxns = T.filter(t => t.date === today);
+  const todayIncome = todayTxns.filter(t => t.type === 'income').reduce((s, t) => s + t.amt, 0);
+  const todayExpense = todayTxns.filter(t => t.type === 'expense').reduce((s, t) => s + t.amt, 0);
+
+  const catBreakdown = (type, color) => {
+    const list = T.filter(t => t.type === type);
+    const total = list.reduce((s, t) => s + t.amt, 0) || 1;
+    const cats = {};
+    list.forEach(t => { cats[t.cat] = (cats[t.cat] || 0) + t.amt; });
+    return Object.entries(cats).sort((a, b) => b[1] - a[1]).map(([cat, amt]) => `
+      <div class="bar-row">
+        <div class="bar-label">${escapeHtml(cat)}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct(amt, total)}%;background:${color};">${fmt(amt)}</div></div>
+      </div>`).join('') || '<p class="muted small">کوئی ڈیٹا موجود نہیں</p>';
+  };
+
   const rows = [...T].sort((a, b) => b.date.localeCompare(a.date)).map(t => `
     <tr>
       <td class="mono strong navy small">${t.id}</td>
-      <td class="muted small">${t.date}</td>
+      <td class="muted small">${t.date}${t.date === today ? ' <span class="tag" style="color:#27ae60;background:#eafaf1;">آج</span>' : ''}</td>
       <td class="small">${escapeHtml(t.desc)}</td>
       <td><span class="tag">${escapeHtml(t.cat)}</span></td>
       <td class="mono strong ltr" style="text-align:left;color:${t.type === 'income' ? '#27ae60' : '#e74c3c'}">${t.type === 'income' ? '+' : '−'}${fmt(t.amt)} روپے</td>
@@ -577,13 +652,33 @@ function screenFinance() {
     </div>
 
     <div class="card">
+      <div class="card-title">📅 آج کی سرگرمی (${today})</div>
+      <div class="stat-grid-3">
+        <div class="fin-card fin-green" style="padding:14px;"><div class="fin-label" style="font-size:11px;">↑ آج کی آمدنی</div><div class="fin-value" style="font-size:22px;color:#1e8449">${fmt(todayIncome)} روپے</div></div>
+        <div class="fin-card fin-red" style="padding:14px;"><div class="fin-label" style="font-size:11px;">↓ آج کے اخراجات</div><div class="fin-value" style="font-size:22px;color:#c0392b">${fmt(todayExpense)} روپے</div></div>
+        <div class="fin-card fin-navy" style="padding:14px;"><div class="fin-label" style="font-size:11px;color:rgba(255,255,255,.65)">📝 آج کے اندراجات</div><div class="fin-value" style="font-size:22px;color:#e8c07a">${todayTxns.length}</div></div>
+      </div>
+    </div>
+
+    <div class="mid-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="card">
+        <div class="card-title" style="color:#1e8449;">↑ آمدنی کی کیٹیگری کے مطابق</div>
+        ${catBreakdown('income', 'linear-gradient(90deg,#27ae60,#1e8449)')}
+      </div>
+      <div class="card">
+        <div class="card-title" style="color:#c0392b;">↓ اخراجات کی کیٹیگری کے مطابق</div>
+        ${catBreakdown('expense', 'linear-gradient(90deg,#e74c3c,#c0392b)')}
+      </div>
+    </div>
+
+    <div class="card">
       <div class="card-title">🧮 کمیشن کیلکولیٹر</div>
       ${commissionCalculatorHtml()}
     </div>
 
     <div class="card">
       <div class="row-between" style="margin-bottom:16px;">
-        <div class="card-title" style="margin:0;">📊 لین دین کی فہرست</div>
+        <div class="card-title" style="margin:0;">📊 لین دین کی فہرست (تازہ ترین پہلے)</div>
         <button class="btn btn-primary" onclick="toggleForm('showTxnForm')">${UI.showTxnForm ? '✕ بند کریں' : '+ نیا اندراج'}</button>
       </div>
       ${UI.showTxnForm ? txnForm() : ''}

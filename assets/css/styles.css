@@ -156,6 +156,14 @@ a { color: var(--gold); text-decoration: none; }
 .type-label { flex: 1; font-size: 12px; font-weight: 500; }
 .type-count { border-radius: 8px; padding: 3px 10px; font-size: 12px; font-weight: 700; }
 
+/* ── Bar breakdown rows (rooms/floors/categories) ── */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; }
+.col-label { font-size: 10px; font-weight: 700; margin-bottom: 10px; letter-spacing: 0.4px; text-transform: uppercase; }
+.bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.bar-label { width: 78px; font-size: 12px; color: var(--muted); flex-shrink: 0; font-weight: 600; }
+.bar-track { flex: 1; height: 22px; background: var(--bg); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; font-size: 11px; color: #fff; font-weight: 700; min-width: 24px; transition: width 0.5s ease; }
+
 /* ── Tabs ── */
 .tab-row { display: flex; gap: 4px; margin-bottom: 16px; background: #fff; border-radius: 12px; padding: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); overflow-x: auto; }
 .tab { flex: 1; text-align: center; padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 400; color: var(--muted); white-space: nowrap; transition: all 0.15s; }
@@ -184,6 +192,9 @@ td { padding: 10px 12px; font-size: 12px; color: var(--ink); border-bottom: 1px 
   font-size: 13px; font-family: inherit; direction: rtl; color: var(--ink); background: #fff; outline: none;
 }
 .field input:focus, .field select:focus { border-color: var(--gold); }
+.check-row { display: flex; flex-wrap: wrap; gap: 10px 20px; margin-top: 4px; }
+.check-item { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; color: var(--ink); cursor: pointer; }
+.check-item input { cursor: pointer; }
 
 /* ── Row search (properties) ── */
 .row-search { display: flex; gap: 10px; align-items: center; }
@@ -191,17 +202,27 @@ td { padding: 10px 12px; font-size: 12px; color: var(--ink); border-bottom: 1px 
 .row-search select { border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; font-size: 12px; font-family: inherit; color: var(--ink); direction: rtl; background: #fff; outline: none; cursor: pointer; }
 
 /* ── Property grid ── */
-.prop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
-.prop-card { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
-.prop-thumb { height: 130px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
-.prop-thumb-icon { font-size: 38px; }
-.prop-thumb-note { font-size: 10px; color: #aab; margin-top: 4px; font-family: monospace; }
+.prop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.prop-card { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.06); transition: transform 0.15s ease, box-shadow 0.15s ease; }
+.prop-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.1); }
+.prop-thumb { height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+.prop-thumb-pattern {
+  position: absolute; inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.12) 1.5px, transparent 1.5px);
+  background-size: 18px 18px;
+  opacity: 0.6;
+}
+.prop-thumb-icon { font-size: 46px; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.35)); position: relative; }
 .prop-code { position: absolute; top: 8px; right: 8px; color: #fff; border-radius: 5px; padding: 2px 8px; font-size: 10px; font-weight: 800; font-family: 'JetBrains Mono', monospace; }
 .prop-status { position: absolute; top: 8px; left: 8px; color: #fff; border-radius: 5px; padding: 2px 8px; font-size: 10px; font-weight: 600; }
 .prop-body { padding: 12px 14px; }
 .prop-title { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 3px; }
-.prop-loc { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+.prop-loc { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+.info-chip-row { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 12px; }
+.info-chip { background: #eef1f7; color: var(--navy); border-radius: 6px; padding: 3px 8px; font-size: 10px; font-weight: 600; white-space: nowrap; }
+.info-chip-off { background: #fdedec; color: #c0392b; }
 .prop-price { font-size: 15px; font-weight: 900; color: var(--gold); font-family: 'JetBrains Mono', monospace; }
+.prop-price-sub { font-size: 10px; font-weight: 600; color: var(--muted); margin-right: 3px; }
 
 /* ── Finance ── */
 .fin-card { border-radius: 12px; padding: 20px; }
