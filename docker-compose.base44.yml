@@ -1,0 +1,29 @@
+services:
+  web:
+    image: node:22
+    container_name: quraishi-web
+    working_dir: /app
+    volumes:
+      - ./:/app
+      - appdata:/app/data
+    ports:
+      - "3000:3000"
+    environment:
+      - BASE44_PREVIEW_MODE
+      - BASE44_PUBLIC_HOST_SUFFIX
+      - BASE44_SANDBOX_HOST_DOMAIN
+      - DATA_DIR=/app/data
+      - NODE_ENV=development
+    env_file:
+      - /run/base44/app.env
+    command: ["sh", "-ec", "npm install && exec npm run dev"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 10s
+      retries: 8
+      start_period: 90s
+    restart: on-failure
+
+volumes:
+  appdata:
