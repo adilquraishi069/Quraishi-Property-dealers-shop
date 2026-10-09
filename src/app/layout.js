@@ -30,6 +30,18 @@ export default function RootLayout({ children }) {
           <div className="container">
             <p><strong>Quraishi Property Dealers Shop</strong></p>
             <p>Buy · Sell · Rent — trusted local property dealer in Kabul, Afghanistan.</p>
+            {process.env.FACEBOOK_PAGE_URL ? (
+              <p>
+                <a
+                  href={process.env.FACEBOOK_PAGE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: 'var(--gold)' }}
+                >
+                  ƒ Follow us on Facebook for new listings
+                </a>
+              </p>
+            ) : null}
           </div>
         </footer>
       </body>

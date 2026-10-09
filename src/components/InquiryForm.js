@@ -28,7 +28,7 @@ export default function InquiryForm({ propertyId, propertyTitle }) {
   }
 
   return (
-    <div className="form-card">
+    <div className="form-card" id="inq">
       <h3>Request a viewing</h3>
       <p style={{ marginTop: 0, color: 'var(--muted)', fontSize: 14 }}>
         Interested in <strong>{propertyTitle}</strong>? Send an inquiry and the dealer will contact you.

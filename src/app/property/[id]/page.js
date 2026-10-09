@@ -39,6 +39,24 @@ export default function PropertyPage({ params }) {
           <InquiryForm propertyId={property.id} propertyTitle={property.title} />
         </div>
       </div>
+      <PropertyMap property={property} />
+    </div>
+  );
+}
+
+function PropertyMap({ property }) {
+  const query = [property.address, property.city, 'Afghanistan'].filter(Boolean).join(', ');
+  return (
+    <div className="map-card">
+      <h3>Location</h3>
+      <iframe
+        src={`https://maps.google.com/maps?q=${encodeURIComponent(query)}&z=14&output=embed`}
+        title={`Map of ${property.title}`}
+        loading="lazy"
+      />
+      <p className="map-note">
+        Approximate location — for the exact address, <a href="#inq">send an inquiry</a>.
+      </p>
     </div>
   );
 }

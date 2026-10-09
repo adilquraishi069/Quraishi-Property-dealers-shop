@@ -37,29 +37,7 @@ db.exec(`
   );
 `);
 
-const SAMPLES = [
-  { title: '4-Bedroom Family House, Wazir Akbar Khan', type: 'house', status: 'sale', price: 95000000, city: 'Kabul', address: 'Wazir Akbar Khan, District 10', bedrooms: 4, bathrooms: 3, area: 320, image_url: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=900&q=80', description: 'Spacious family house in one of Kabul\u2019s most desirable neighborhoods. Private courtyard, generator backup and secure parking.' },
-  { title: 'Modern 2-Bedroom Apartment, Shahr-e-Naw', type: 'apartment', status: 'sale', price: 42000000, city: 'Kabul', address: 'Shahr-e-Naw, District 4', bedrooms: 2, bathrooms: 2, area: 110, image_url: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=900&q=80', description: 'Bright, newly finished apartment with modern kitchen, elevator access and 24/7 water supply.' },
-  { title: 'Commercial Shop, Chicken Street', type: 'shop', status: 'rent', price: 35000, city: 'Kabul', address: 'Chicken Street, District 1', bedrooms: 0, bathrooms: 1, area: 60, image_url: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=900&q=80', description: 'Prime street-front shop on the famous Chicken Street. Ideal for handicrafts, retail or a small showroom. Monthly rent.' },
-  { title: 'Garden Villa, Karte Se', type: 'house', status: 'sale', price: 68000000, city: 'Kabul', address: 'Karte Se, District 5', bedrooms: 5, bathrooms: 4, area: 400, image_url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=900&q=80', description: 'Elegant villa with a large walled garden, separate guest quarters and mountain views.' },
-  { title: 'Furnished Office Space, Shahr-e-Naw', type: 'commercial', status: 'rent', price: 60000, city: 'Kabul', address: 'Shahr-e-Naw, District 4', bedrooms: 0, bathrooms: 2, area: 180, image_url: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=900&q=80', description: 'Ready-to-use furnished office with meeting room, internet and staff parking. Monthly rent.' },
-  { title: 'Residential Plot, Paghman Road', type: 'land', status: 'sale', price: 12000000, city: 'Kabul', address: 'Paghman Road, District 9', bedrooms: 0, bathrooms: 0, area: 600, image_url: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=900&q=80', description: 'Flat, build-ready plot with clear deed documents on a fast-developing road. Great long-term investment.' },
-  { title: 'Renovated 3-Bed House, Taimani', type: 'house', status: 'sale', price: 55000000, city: 'Kabul', address: 'Taimani, District 3', bedrooms: 3, bathrooms: 2, area: 200, image_url: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=900&q=80', description: 'Fully renovated home close to markets and schools. New wiring, plumbing and insulation throughout.' },
-  { title: 'Cozy Studio Apartment, Kabul University Road', type: 'apartment', status: 'rent', price: 18000, city: 'Kabul', address: 'Kabul University Road, District 6', bedrooms: 1, bathrooms: 1, area: 45, image_url: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=900&q=80', description: 'Compact furnished studio, perfect for students or young professionals. Utilities included in rent.' },
-];
-
-function seed() {
-  const insert = db.prepare(`
-    INSERT INTO properties (title, type, status, price, city, address, bedrooms, bathrooms, area, image_url, description)
-    VALUES (@title, @type, @status, @price, @city, @address, @bedrooms, @bathrooms, @area, @image_url, @description)
-  `);
-  const run = db.transaction(() => {
-    for (const p of SAMPLES) insert.run(p);
-  });
-  run();
-}
-
-if (db.prepare('SELECT COUNT(*) AS n FROM properties').get().n === 0) seed();
+// No demo seed data — the shop owner adds real listings via the admin dashboard (/admin).
 
 export function listProperties({ q = '', status = '', minPrice = '', maxPrice = '' } = {}) {
   const where = [];

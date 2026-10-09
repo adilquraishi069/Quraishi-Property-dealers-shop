@@ -1,4 +1,5 @@
 import { createInquiry, getProperty } from '../../../lib/db';
+import { appendInquiryRow } from '../../../lib/googleSheets';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,6 +26,22 @@ export async function POST(request) {
     email: String(email).trim().slice(0, 120),
     message: String(message).trim().slice(0, 2000),
   });
+
+  // Fire-and-forget Google Sheets lead tracking — never blocks the inquiry.
+  try {
+    const property = getProperty(Number(propertyId));
+    await appendInquiryRow([
+      new Date().toISOString(),
+      property?.title || `#${propertyId}`,
+      String(name).trim(),
+      String(phone).trim(),
+      String(email).trim(),
+      String(message).trim(),
+      `/property/${propertyId}`,
+    ]);
+  } catch (err) {
+    console.error('Google Sheets sync failed:', err.message);
+  }
 
   return Response.json({ ok: true, id });
 }
