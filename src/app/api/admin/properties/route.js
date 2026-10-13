@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   if (!(await isAdmin())) return unauthorized();
-  return Response.json({ properties: listProperties() });
+  return Response.json({ properties: await listProperties() });
 }
 
 export async function POST(request) {
@@ -23,7 +23,7 @@ export async function POST(request) {
   if (!p.city || !String(p.city).trim()) return Response.json({ error: 'City is required.' }, { status: 400 });
   if (!p.price || Number(p.price) <= 0) return Response.json({ error: 'Price must be a positive number.' }, { status: 400 });
 
-  const property = createProperty({
+  const property = await createProperty({
     title: String(p.title).trim().slice(0, 200),
     type: ['house', 'apartment', 'land', 'shop', 'commercial'].includes(p.type) ? p.type : 'house',
     status: p.status === 'rent' ? 'rent' : 'sale',

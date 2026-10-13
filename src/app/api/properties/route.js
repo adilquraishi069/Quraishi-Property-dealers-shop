@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request) {
   const sp = request.nextUrl.searchParams;
-  const properties = listProperties({
+  const properties = await listProperties({
     q: sp.get('q') || '',
     status: sp.get('status') || '',
     minPrice: sp.get('minPrice') || '',

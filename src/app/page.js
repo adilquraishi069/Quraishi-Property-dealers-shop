@@ -5,7 +5,7 @@ import PropertyCard from '../components/PropertyCard';
 
 export const dynamic = 'force-dynamic';
 
-export default function HomePage({ searchParams }) {
+export default async function HomePage({ searchParams }) {
   const sp = searchParams || {};
   const filters = {
     q: sp.q || '',
@@ -13,7 +13,7 @@ export default function HomePage({ searchParams }) {
     minPrice: sp.minPrice || '',
     maxPrice: sp.maxPrice || '',
   };
-  const properties = listProperties(filters);
+  const properties = await listProperties(filters);
 
   return (
     <>

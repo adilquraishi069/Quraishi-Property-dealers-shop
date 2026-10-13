@@ -29,13 +29,13 @@ export async function PUT(request, { params }) {
     return Response.json({ error: 'Invalid request body' }, { status: 400 });
   }
 
-  const property = updateProperty(params.id, buildPayload(body));
+  const property = await updateProperty(params.id, buildPayload(body));
   if (!property) return Response.json({ error: 'Property not found' }, { status: 404 });
   return Response.json({ ok: true, property });
 }
 
 export async function DELETE(_request, { params }) {
   if (!(await isAdmin())) return unauthorized();
-  deleteProperty(params.id);
+  await deleteProperty(params.id);
   return Response.json({ ok: true });
 }

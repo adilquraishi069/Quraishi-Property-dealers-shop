@@ -6,8 +6,8 @@ import InquiryForm from '../../../components/InquiryForm';
 
 export const dynamic = 'force-dynamic';
 
-export default function PropertyPage({ params }) {
-  const property = getProperty(params.id);
+export default async function PropertyPage({ params }) {
+  const property = await getProperty(params.id);
   if (!property) notFound();
 
   return (

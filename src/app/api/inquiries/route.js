@@ -12,14 +12,14 @@ export async function POST(request) {
   }
 
   const { propertyId, name, phone, email = '', message = '' } = body || {};
-  if (!propertyId || !getProperty(propertyId)) {
+  if (!propertyId || !(await getProperty(propertyId))) {
     return Response.json({ error: 'Property not found' }, { status: 400 });
   }
   if (!name || !String(name).trim() || !phone || !String(phone).trim()) {
     return Response.json({ error: 'Name and phone are required.' }, { status: 400 });
   }
 
-  const id = createInquiry({
+  const id = await createInquiry({
     propertyId: Number(propertyId),
     name: String(name).trim().slice(0, 120),
     phone: String(phone).trim().slice(0, 40),
@@ -29,7 +29,7 @@ export async function POST(request) {
 
   // Fire-and-forget Google Sheets lead tracking — never blocks the inquiry.
   try {
-    const property = getProperty(Number(propertyId));
+    const property = await getProperty(Number(propertyId));
     await appendInquiryRow([
       new Date().toISOString(),
       property?.title || `#${propertyId}`,
