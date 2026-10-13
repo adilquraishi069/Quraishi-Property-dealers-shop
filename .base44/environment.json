@@ -8,6 +8,26 @@
       "description": "Password used to log in to the /admin dashboard.",
       "requiredAtBoot": true,
       "generatedForDevelopment": true
+    },
+    {
+      "name": "FACEBOOK_PAGE_URL",
+      "description": "Facebook page URL shown as a follow link in the footer (optional).",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "GOOGLE_SHEETS_ID",
+      "description": "Google Sheet ID where new inquiries are appended (optional).",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "GOOGLE_SERVICE_ACCOUNT_EMAIL",
+      "description": "Google service-account client_email for Sheets access (optional).",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "GOOGLE_PRIVATE_KEY",
+      "description": "Google service-account private_key for Sheets access (optional).",
+      "requiredAtBoot": false
     }
   ]
 }

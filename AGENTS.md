@@ -13,6 +13,11 @@ Non-obvious setup knowledge for this imported app.
 
 ## Secrets
 - `ADMIN_PASSWORD` — required at boot (admin login has no fallback). Generated development placeholder lives in `/run/base44/app.env` (never in the repo).
+- `FACEBOOK_PAGE_URL` — optional; when set, a "Follow us on Facebook" footer link appears (user's Facebook page).
+- `GOOGLE_SHEETS_ID` + `GOOGLE_SERVICE_ACCOUNT_EMAIL` + `GOOGLE_PRIVATE_KEY` — optional; when all three are set, every inquiry is appended to that Google Sheet (`src/lib/googleSheets.js`, service-account JWT, no extra npm deps). Missing credentials = sync silently skipped; sheets errors are logged, the inquiry is still saved in SQLite.
+
+## Data
+- No demo/seed data. Listings are added by the owner via `/admin` (dashboard form, image by URL).
 
 ## Sandbox-only overrides (gated on `BASE44_PREVIEW_MODE === "1"`)
 - `next.config.mjs` appends `3000-$BASE44_PUBLIC_HOST_SUFFIX` and `.$BASE44_SANDBOX_HOST_DOMAIN` to `allowedDevOrigins` so the preview proxy can load dev assets/HMR. With the flag unset the list is empty (stock Next behavior).
